@@ -1,0 +1,45 @@
+databases:
+  - name: whats-cookin-db
+    databaseName: whatscookin
+    user: cookin
+    plan: free
+    region: oregon
+    postgresMajorVersion: "17"
+
+services:
+  - type: web
+    name: whats-cookin-api
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci --include=dev && npm run --workspace server build
+    startCommand: node server/dist/db/migrate.js && npm --workspace server start
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: whats-cookin-db
+          property: connectionString
+      - key: CLIENT_ORIGIN
+        fromService:
+          type: web
+          name: whats-cookin-web
+          envVarKey: RENDER_EXTERNAL_URL
+
+  - type: web
+    name: whats-cookin-web
+    runtime: static
+    buildCommand: npm ci --include=dev && npm run --workspace client build
+    staticPublishPath: client/dist
+    autoDeploy: false
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: whats-cookin-api
+          envVarKey: RENDER_EXTERNAL_URL

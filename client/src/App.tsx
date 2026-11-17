@@ -3,7 +3,7 @@ import { Link, NavLink, Route, Routes, useNavigate, useParams, useSearchParams }
 import { ArrowLeft, ArrowRight, ArrowUpRight, Bookmark, CalendarDays, Check, ChefHat, ChevronDown, Clock3, CookingPot, Heart, Leaf, ListChecks, LogIn, Menu, Minus, Plus, Search, ShoppingBasket, Sparkles, Star, Timer, Utensils, X } from 'lucide-react';
 import AdminDashboard from './AdminDashboard';
 
-const API=import.meta.env.VITE_API_URL||'http://localhost:4000/api';
+const API=`${(import.meta.env.VITE_API_URL||'http://localhost:4000').replace(/\/+$/,'')}/api`;
 const photos={breakfast:'/images/breakfast.svg',lunch:'/images/lunch.svg',dinner:'/images/dinner.svg',snack:'/images/snacks.svg',drinks:'/images/drinks.svg'};
 type Recipe={id:string;title:string;slug:string;description:string;image_url?:string;prep_minutes:number;cook_minutes:number;difficulty:string;servings:number;cuisine?:string;ingredients:{name:string;quantity:number;unit:string;notes?:string;category?:string}[];instructions:string[];missing?:string[];diets?:string[];avg_rating?:number|null;rating_count?:number;categories?:any[];source_name?:string;source_url?:string;license?:string};
 function img(id?:string){if(id?.startsWith('/'))return id;if(id?.startsWith('http'))return id;return photos.dinner;}

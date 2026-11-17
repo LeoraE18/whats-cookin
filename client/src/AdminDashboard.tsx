@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Check, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
 
-const API=import.meta.env.VITE_API_URL||'http://localhost:4000/api';
+const API=`${(import.meta.env.VITE_API_URL||'http://localhost:4000').replace(/\/+$/,'')}/api`;
 async function api(path:string,init:RequestInit={}){const token=localStorage.getItem('cookin-token');const response=await fetch(`${API}${path}`,{...init,headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`,...init.headers}});if(!response.ok){const error=await response.json().catch(()=>({}));throw new Error(error.error||'The request failed.');}return response.status===204?null:response.json();}
 type Row=Record<string,any>;
 const blank={title:'',slug:'',description:'',imageUrl:'/images/lunch.svg',prepMinutes:10,cookMinutes:15,difficulty:'Easy',servings:2,cuisine:'',sourceId:null as number|null,instructions:[''],categories:[] as string[],diets:[] as string[],ingredients:[{name:'',quantity:1,unit:'',category:'Produce',allergens:[] as string[]}]};

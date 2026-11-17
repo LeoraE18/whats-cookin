@@ -9,7 +9,7 @@ Food artwork in `client/public/images/` is original vector illustration created 
 - Node.js 20+ and npm 10+
 - Docker Compose with PostgreSQL 17, or PostgreSQL 14+
 
-1. Copy `.env.example` to `.env`. Set a unique `JWT_SECRET` with at least 32 random characters and a working `DATABASE_URL`.
+1. Copy `.env.example` to `.env`. Set a unique `JWT_SECRET` with at least 32 random characters, choose a local `POSTGRES_PASSWORD`, and set `DATABASE_URL` to `postgresql://cookin:<your-password>@localhost:5432/whats_cookin` using that same password.
 2. Start the bundled database: `docker compose up -d db`.
 3. Install packages: `npm install`.
 4. Initialize and seed PostgreSQL: `npm run db:migrate` then `npm run db:seed`.
@@ -21,7 +21,8 @@ The client runs at http://localhost:5173, API at http://localhost:4000, and heal
 
 | Variable | Use |
 | --- | --- |
-| `DATABASE_URL` | PostgreSQL connection string (Compose default is in `.env.example`) |
+| `DATABASE_URL` | PostgreSQL connection string; set locally in `.env`, supplied by Render in deployment |
+| `POSTGRES_PASSWORD` | Local Compose database password; set locally in `.env` |
 | `JWT_SECRET` | Seven-day bearer token signing key; production requires 32+ characters |
 | `CLIENT_ORIGIN` | Exact allowed browser origin for CORS |
 | `API_PORT` | API port; defaults to 4000 |
@@ -40,6 +41,14 @@ npm audit
 npm run db:migrate
 npm run db:seed
 ```
+
+## Render deployment
+
+The repository includes a `render.yaml` Blueprint for a free static site, free Node web service, and free PostgreSQL database. The API runs the idempotent schema migration before each start; recipe seed data is never run automatically. After the first successful deploy, run `npm run db:seed` once from the API service's Render Shell if you want the included recipe collection. The seed uses upserts, so rerunning it does not create duplicate seed records, but it refreshes the seeded recipes and their ingredient/category/diet links.
+
+In the Render Blueprint, `VITE_API_URL`, `CLIENT_ORIGIN`, and `DATABASE_URL` are wired from the sibling service/database URLs, and Render generates `JWT_SECRET`. Add `OPENAI_API_KEY` manually to the API service only if you want AI substitutions; it is optional. If connecting to PostgreSQL from outside Render, use the external URL with `sslmode=require`; Render services use the database's internal URL.
+
+Render's free PostgreSQL plan is available but expires after 30 days, has 1 GB of storage, and does not include backups. Free web services can sleep when idle. Treat this setup as a preview/hobby deployment, not durable storage for real user data. The Blueprint has automatic deploys disabled so pushes do not deploy until you enable them.
 
 Server tests run the schema and seed against embedded PGlite, then exercise the Express API over HTTP. This lets the migration and API tests run without a developer's local PostgreSQL password. For app usage, the PostgreSQL credentials in `.env` still need to point to a running server.
 
